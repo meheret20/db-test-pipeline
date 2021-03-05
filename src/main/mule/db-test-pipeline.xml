@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="53b3ce6e-3e3f-4919-807b-a46c55682ec9" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="6ee05dc4-d6f0-45f0-9d9b-4157a53192c9" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Dasu1995" database="orders" />
+	</db:config>
+	<flow name="db-test-pipelineFlow" doc:id="dcab661d-10ef-4117-8c16-d6fcd47553f4" >
+		<http:listener doc:name="Listener" doc:id="45a9247b-36a3-4543-b3fb-11b4f04956b9" config-ref="HTTP_Listener_config" path="/db-test"/>
+		<logger level="INFO" doc:name="Logger" doc:id="761bec9c-ef11-4fdc-8ab0-be5286076566" message="#['Before database info']"/>
+		<db:select doc:name="Select" doc:id="3d838a0c-09c3-446e-8240-6edb4b274078" config-ref="Database_Config">
+			<db:sql ><![CDATA[Select * from orders where orid <= 10]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="84fd3d97-09b0-4eb3-a5d2-9629a78b08c7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="bc819c1d-c438-44cb-8a36-2ffeb752a34e" message="After database info payload== #[payload]"/>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="cd858101-a651-42d2-bf0a-cc3986e61326" />
+	</flow>
+</mule>
